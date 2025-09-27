@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampTrade Mobile</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+        
+        .app-container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 20px;
+        }
+        
+        .welcome {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .welcome h2 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .welcome p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .action-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .action-btn.secondary {
+            background: #28a745;
+        }
+        
+        .action-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .action-text {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .products {
+            margin-bottom: 30px;
+        }
+        
+        .products h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .product-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: white;
+        }
+        
+        .product-image {
+            width: 50px;
+            height: 50px;
+            background: #f0f0f0;
+            border-radius: 6px;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+        }
+        
+        .product-info {
+            flex: 1;
+        }
+        
+        .product-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .product-price {
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .features {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .features h4 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .features ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .features li {
+            padding: 5px 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .features li:before {
+            content: "✓ ";
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .footer {
+            background: #333;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+        }
+        
+        .footer p {
+            margin-bottom: 5px;
+        }
+        
+        .status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+        
+        @media (max-width: 480px) {
+            .app-container {
+                max-width: 100%;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="status" id="status">Online</div>
+    
+    <div class="app-container">
+        <div class="header">
+            <h1>CampTrade</h1>
+            <p>Campus Marketplace</p>
+        </div>
+        
+        <div class="content">
+            <div class="welcome">
+                <h2>Welcome to CampTrade</h2>
+                <p>Buy, sell, and swap items on campus</p>
+            </div>
+            
+            <div class="actions">
+                <button class="action-btn" onclick="openWebApp()">
+                    <span class="action-icon">🛍️</span>
+                    <span class="action-text">Browse</span>
+                </button>
+                <button class="action-btn secondary" onclick="openWebApp()">
+                    <span class="action-icon">📱</span>
+                    <span class="action-text">Sell</span>
+                </button>
+            </div>
+            
+            <div class="products">
+                <h3>Featured Products</h3>
+                <div class="product-item">
+                    <div class="product-image">📚</div>
+                    <div class="product-info">
+                        <div class="product-name">Introduction to Algorithms</div>
+                        <div class="product-price">₹40</div>
+                    </div>
+                </div>
+                <div class="product-item">
+                    <div class="product-image">🧮</div>
+                    <div class="product-info">
+                        <div class="product-name">TI-84 Plus Calculator</div>
+                        <div class="product-price">₹30</div>
+                    </div>
+                </div>
+                <div class="product-item">
+                    <div class="product-image">🎧</div>
+                    <div class="product-info">
+                        <div class="product-name">Noise-Cancelling Headphones</div>
+                        <div class="product-price">₹80</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="features">
+                <h4>Mobile App Features</h4>
+                <ul>
+                    <li>Offline browsing</li>
+                    <li>Push notifications</li>
+                    <li>Camera integration</li>
+                    <li>Secure payments</li>
+                    <li>Real-time chat</li>
+                    <li>Location services</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Powered by CampTrade</p>
+            <p>Backend: camp-trade.vercel.app</p>
+            <p>© 2025 CampTrade</p>
+        </div>
+    </div>
+    
+    <script>
+        // Mobile app functionality
+        function openWebApp() {
+            // Open the full web app in the same window
+            window.location.href = 'https://camp-trade.vercel.app';
+        }
+        
+        // Check network status
+        function updateNetworkStatus() {
+            const status = document.getElementById('status');
+            if (navigator.onLine) {
+                status.textContent = 'Online';
+                status.style.background = '#28a745';
+            } else {
+                status.textContent = 'Offline';
+                status.style.background = '#dc3545';
+            }
+        }
+        
+        // Listen for network changes
+        window.addEventListener('online', updateNetworkStatus);
+        window.addEventListener('offline', updateNetworkStatus);
+        
+        // Initialize
+        updateNetworkStatus();
+        
+        // Add some mobile-specific functionality
+        if ('serviceWorker' in navigator') {
+            // Register service worker for offline functionality
+            console.log('Service Worker support detected');
+        }
+        
+        // Handle mobile app lifecycle
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                console.log('App backgrounded');
+            } else {
+                console.log('App foregrounded');
+            }
+        });
+        
+        // Add touch feedback
+        document.querySelectorAll('.action-btn').forEach(btn => {
+            btn.addEventListener('touchstart', function() {
+                this.style.transform = 'scale(0.95)';
+            });
+            
+            btn.addEventListener('touchend', function() {
+                this.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
