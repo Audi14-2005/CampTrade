@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { useAuth } from "@/lib/auth-context"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { X, UploadCloud } from "lucide-react"
@@ -37,6 +38,7 @@ type FormValues = z.infer<typeof schema>
 
 export default function NewProductPage() {
   const router = useRouter()
+  const { user } = useAuth()
   const [images, setImages] = useState<string[]>([])
   const [isDragging, setIsDragging] = useState(false)
   const {
@@ -61,32 +63,41 @@ export default function NewProductPage() {
 
   async function onSubmit(values: FormValues) {
     try {
+      if (!user) {
+        console.error("User not authenticated")
+        return
+      }
+
       const res = await fetch("/api/products", {
         method: "POST",
-        headers: { "Content-Type": "application/json" }, // ensure server parses JSON body
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...values,
           images,
           tags: values.tags
             ? values.tags
-                .split(",")
-                .map((s) => s.trim())
-                .filter(Boolean)
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean)
             : [],
           status: "published",
+          seller_id: user.id,
         }),
       })
 
       if (!res.ok) {
-        // You can surface a UI message here if desired
-        console.error("[v0] Publish failed:", await res.text())
+        const errorData = await res.json()
+        console.error("Publish failed:", errorData)
         return
       }
+
+      const result = await res.json()
+      console.log("Product created successfully:", result)
 
       // Redirect to your list; SWR will revalidate there
       router.push("/seller/products")
     } catch (err) {
-      console.error("[v0] Network error while publishing:", err)
+      console.error("Network error while publishing:", err)
     }
   }
 

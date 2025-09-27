@@ -209,28 +209,13 @@ export default function SettingsPage() {
             </div>
 
             {/* Default Marketplace Filters */}
-            <div className="grid gap-4 p-4 md:grid-cols-2">
+            <div className="grid gap-4 p-4">
               <div className="space-y-3">
                 <div className="font-medium text-foreground">Default Filters</div>
                 <div className="text-sm text-muted-foreground">Set defaults for your browse experience.</div>
                 <div className="mt-2 grid gap-2">
                   <Label htmlFor="default-campus">Default campus</Label>
                   <Input id="default-campus" placeholder="e.g., State University - Main Campus" />
-                </div>
-              </div>
-              <div className="space-y-3">
-                <div className="font-medium text-foreground">Price range</div>
-                <div className="text-sm text-muted-foreground">Show items up to this amount.</div>
-                <div className="mt-2 flex items-center gap-3">
-                  <Input
-                    id="max-price"
-                    type="number"
-                    min={0}
-                    step="1"
-                    placeholder="Max price ($)"
-                    className="max-w-[160px]"
-                  />
-                  <Button variant="outline">Save</Button>
                 </div>
               </div>
             </div>

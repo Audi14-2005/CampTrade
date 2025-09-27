@@ -3,15 +3,50 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Menu, Settings, Bell, Shield, HelpCircle, User, Store, ShoppingCart } from "lucide-react"
+import { Menu, Settings, Bell, Shield, HelpCircle, User, Store, ShoppingCart, LogOut, LogIn } from "lucide-react"
 import { useCart } from "@/lib/use-cart"
+import { useAuth } from "@/lib/auth-context"
 
 export default function GlobalNav() {
   const cart = useCart()
+  const { user, signOut, groupName } = useAuth()
   const count = cart.items.reduce((acc, it) => acc + (it.__qty ?? 1), 0)
 
   return (
     <div className="flex items-center gap-2">
+      {/* User info or auth buttons */}
+      {user ? (
+        <div className="flex items-center gap-2">
+          <div className="hidden sm:block text-sm">
+            <div className="font-medium">{user.email}</div>
+            <div className="text-xs text-muted-foreground">{groupName}</div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={signOut}
+            className="bg-transparent"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Sign Out
+          </Button>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2">
+          <Link href="/auth/login">
+            <Button variant="outline" size="sm" className="bg-transparent">
+              <LogIn className="h-4 w-4 mr-2" />
+              Sign In
+            </Button>
+          </Link>
+          <Link href="/auth/signup">
+            <Button size="sm">
+              Sign Up
+            </Button>
+          </Link>
+        </div>
+      )}
+
       {/* Cart button with live count */}
       <Link href="/cart">
         <Button

@@ -8,6 +8,7 @@ import GlobalNav from "@/components/global-nav"
 import { Suspense } from "react"
 import Link from "next/link"
 import { Toaster } from "@/components/ui/toaster"
+import { AuthProvider } from "@/lib/auth-context"
 
 export const metadata: Metadata = {
   title: "v0 App",
@@ -23,22 +24,24 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-        <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
-            <Link href="/" className="font-semibold text-xl">
-              CampTrade
-            </Link>
-            <GlobalNav />
-          </div>
-        </header>
+        <AuthProvider>
+          <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
+              <Link href="/" className="font-semibold text-xl">
+                CampTrade
+              </Link>
+              <GlobalNav />
+            </div>
+          </header>
 
-        <main className="min-h-screen">
-          <Suspense>{children}</Suspense>
-        </main>
+          <main className="min-h-screen">
+            <Suspense>{children}</Suspense>
+          </main>
 
-        <Toaster />
+          <Toaster />
 
-        <Analytics />
+          <Analytics />
+        </AuthProvider>
       </body>
     </html>
   )

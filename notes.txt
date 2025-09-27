@@ -1,0 +1,155 @@
+@login_required
+def upi_pay(request, product_id):
+	product = get_object_or_404(Product, id=product_id)
+	order = Order.objects.create(
+		product=product,
+		buyer=request.user,
+		price_at_purchase=product.price,
+		status='pending',
+	)
+	upi = settings.UPI
+	params = {
+		'pa': upi['VPA'],
+		'pn': upi.get('PAYEE_NAME', 'Payee'),
+		'am': str(order.price_at_purchase),
+		'cu': 'INR',
+		'tn': f'Order {order.id} - {product.name}',
+	}
+	upi_url = 'upi://pay?' + urlencode(params)
+	qr_api = 'https://api.qrserver.com/v1/create-qr-code/?' + urlencode({'size': '200x200', 'data': upi_url})
+	if request.method == 'POST':
+		# Demo confirm: mark as paid
+		order.mark_paid()
+		return redirect('buy-success', order_id=order.id)
+	return render(request, 'core/upi_pay.html', {'product': product, 'order': order, 'upi_url': upi_url, 'qr_url': qr_api})
+
+
+
+
+
+@login_required
+def paytm_initiate(request, product_id):
+	# Create an order, then build params and checksum, render auto-post form to Paytm
+	product = get_object_or_404(Product, id=product_id)
+	order = Order.objects.create(
+		product=product,
+		buyer=request.user,
+		price_at_purchase=product.price,
+		status='pending',
+	)
+	from paytmchecksum import PaytmChecksum
+	paytm_conf = settings.PAYTM
+	order_id = f"ORD{order.id}"
+	callback_url = request.build_absolute_uri('/paytm/callback/')
+	params = {
+		'MID': paytm_conf['MERCHANT_ID'],
+		'ORDER_ID': order_id,
+		'CUST_ID': str(request.user.id),
+		'INDUSTRY_TYPE_ID': paytm_conf['INDUSTRY_TYPE_ID'],
+		'CHANNEL_ID': paytm_conf['CHANNEL_ID'],
+		'TXN_AMOUNT': str(order.price_at_purchase),
+		'WEBSITE': paytm_conf['WEBSITE'],
+		'CALLBACK_URL': callback_url,
+	}
+	checksum = PaytmChecksum.generateSignature(params, paytm_conf['MERCHANT_KEY'])
+	order.paytm_order_id = order_id
+	order.paytm_checksum = checksum
+	order.save(update_fields=['paytm_order_id', 'paytm_checksum'])
+	gateway_url = f"{paytm_conf['GATEWAY_BASE_URL']}/order/process"
+	return render(request, 'core/paytm_redirect.html', {'gateway_url': gateway_url, 'params': params, 'checksum': checksum})
+
+
+@csrf_exempt
+def paytm_callback(request):
+	# Verify checksum and update order status
+	if request.method != 'POST':
+		raise Http404
+	from paytmchecksum import PaytmChecksum
+	received_data = request.POST.dict()
+	checksum = received_data.pop('CHECKSUMHASH', '')
+	paytm_conf = settings.PAYTM
+	is_valid = PaytmChecksum.verifySignature(received_data, paytm_conf['MERCHANT_KEY'], checksum)
+	order = Order.objects.filter(paytm_order_id=received_data.get('ORDER_ID')).first()
+	if not order:
+		return render(request, 'core/paytm_result.html', {'success': False, 'message': 'Order not found'})
+	order.paytm_txn_id = received_data.get('TXNID')
+	order.paytm_response_code = received_data.get('RESPCODE')
+	order.paytm_response_msg = received_data.get('RESPMSG')
+	if is_valid and received_data.get('RESPCODE') == '01':
+		order.status = 'paid'
+	else:
+		order.status = 'failed'
+	order.save(update_fields=['paytm_txn_id', 'paytm_response_code', 'paytm_response_msg', 'status'])
+	return render(request, 'core/paytm_result.html', {'success': order.status == 'paid', 'order': order, 'message': order.paytm_response_msg})
+
+
+
+
+
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Checkout</title>
+		<style>
+			body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; background: #f6f8fb; color: #0d1b2a; }
+			.header { background:#111827; color:#fff; padding:16px 24px; display:flex; align-items:center; justify-content:space-between; }
+			.header .brand { font-weight:600; letter-spacing:.5px; }
+			.container { max-width: 1000px; margin: 32px auto; padding: 0 16px; }
+			.card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 1px 2px rgba(0,0,0,0.04); overflow:hidden; }
+			.row { display:flex; flex-wrap:wrap; }
+			.col { flex:1 1 360px; padding:24px; }
+			.summary { background:#0f172a; color:#e5e7eb; }
+			.h1 { font-size:20px; font-weight:600; margin:0 0 16px; }
+			.price { font-size:28px; font-weight:700; color:#10b981; margin:8px 0 16px; }
+			.qr { border:1px dashed #cbd5e1; background:#f8fafc; padding:16px; text-align:center; border-radius:8px; }
+			.actions { display:flex; gap:12px; margin-top:16px; }
+			.button { appearance:none; border:0; padding:10px 14px; border-radius:8px; font-weight:600; cursor:pointer; }
+			.btn-primary { background:#111827; color:#fff; }
+			.meta { color:#64748b; font-size:12px; margin-top:8px; }
+			.badge { display:inline-block; padding:4px 8px; background:#111827; color:#fff; border-radius:999px; font-size:11px; font-weight:600; }
+			.footer { text-align:center; color:#6b7280; font-size:12px; padding:20px; }
+			@media (max-width: 720px) { .row { flex-direction:column; } }
+		</style>
+	</head>
+	<body>
+		<div class="header">
+			<div class="brand">Secure Checkout</div>
+			<div class="badge">TEST MODE</div>
+		</div>
+		<div class="container">
+			<div class="card">
+				<div class="row">
+					<div class="col">
+						<div class="h1">Pay via UPI</div>
+						<p>Scan the QR with any UPI app or tap the link below to open your UPI app. After completing payment, click Confirm.</p>
+						<div class="qr">
+							<img src="{{ qr_url }}" alt="UPI QR" style="max-width:220px; width:100%;">
+							<div class="meta" style="margin-top:8px; word-break:break-all;">{{ upi_url }}</div>
+						</div>
+						<div class="actions">
+							<form method="post">
+								{% csrf_token %}
+								<input type="hidden" name="action" value="success" />
+								<button class="button btn-primary" type="submit">Confirm Payment</button>
+							</form>
+						</div>
+						<p class="meta">Payments to: {{ order.buyer.email|default:"your email" }} &bull; Beneficiary VPA: {{ settings.UPI.VPA|default:"" }}</p>
+					</div>
+					<div class="col summary">
+						<div class="h1">Order Summary</div>
+						<p><strong>{{ product.name }}</strong></p>
+						<p class="price">₹ {{ order.price_at_purchase }}</p>
+						<p class="meta">Order #{{ order.id }} &middot; {{ product.description|default:"No description" }}</p>
+					</div>
+				</div>
+			</div>
+			<div class="footer">This is a demo checkout inspired by Razorpay UI. No real money moves in test mode.</div>
+		</div>
+	</body>
+</html> 
+
+
+
+

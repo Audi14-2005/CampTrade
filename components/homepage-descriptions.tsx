@@ -23,7 +23,7 @@ type Item = {
 const items: Item[] = [
   {
     id: 1,
-    title: "Introduction to Algorithms, 3rd Edition — $40",
+    title: "Introduction to Algorithms, 3rd Edition — ₹40",
     img: "/images/home-sample-1.png",
     alt: "Stack of spiral-bound notebooks representing a study item",
     overview:
@@ -61,7 +61,7 @@ const items: Item[] = [
       },
       commercial: {
         price: "40",
-        currency: "USD",
+        currency: "INR",
         availability: "In stock",
         shipping: "Ships in 2–4 business days",
         returns: "30-day return policy if unused",
@@ -77,7 +77,7 @@ const items: Item[] = [
   },
   {
     id: 2,
-    title: "TI-84 Plus Calculator — $30",
+    title: "TI-84 Plus Calculator — ₹30",
     img: "/images/home-sample-2.png",
     alt: "Compact white and light-blue electric iron (placeholder visual)",
     overview:
@@ -115,7 +115,7 @@ const items: Item[] = [
       },
       commercial: {
         price: "30",
-        currency: "USD",
+        currency: "INR",
         availability: "In stock",
         shipping: "Standard and expedited shipping available",
         returns: "30-day return policy",
@@ -131,7 +131,7 @@ const items: Item[] = [
   },
   {
     id: 3,
-    title: "Noise-Cancelling Headphones — $80",
+    title: "Noise-Cancelling Headphones — ₹80",
     img: "/images/ironbb.png",
     alt: "Stainless steel electric kettle (placeholder visual)",
     overview:
@@ -165,7 +165,7 @@ const items: Item[] = [
       },
       commercial: {
         price: "80",
-        currency: "USD",
+        currency: "INR",
         availability: "In stock",
         shipping: "Ships within 24 hours",
         returns: "30-day hassle-free returns",
